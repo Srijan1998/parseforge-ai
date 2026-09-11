@@ -20,7 +20,7 @@ public class DocumentRepositoryTests {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
 
-        Document document = new Document(id, "invoice.pdf", "application/pdf", 1024L, "UPLOADED", now, now);
+        Document document = new Document(id, "invoice.pdf", "application/pdf", 1024L, DocumentStatus.UPLOADED, now, now);
 
         documentRepository.save(document);
 
@@ -29,6 +29,6 @@ public class DocumentRepositoryTests {
         assertThat(savedDocument.get().getFileName()).isEqualTo("invoice.pdf");
         assertThat(savedDocument.get().getContentType()).isEqualTo("application/pdf");
         assertThat(savedDocument.get().getFileSize()).isEqualTo(1024L);
-        assertThat(savedDocument.get().getStatus()).isEqualTo("UPLOADED");
+        assertThat(savedDocument.get().getStatus()).isEqualTo(DocumentStatus.UPLOADED);
     }
 }

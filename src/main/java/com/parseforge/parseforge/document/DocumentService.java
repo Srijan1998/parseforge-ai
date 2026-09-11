@@ -1,0 +1,21 @@
+package com.parseforge.parseforge.document;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+public class DocumentService {
+    private DocumentRepository documentRepository;
+
+    public DocumentService(DocumentRepository documentRepository) {
+        this.documentRepository = documentRepository;
+    }
+
+    public Document createDocument(String fileName, String contentType, Long fileSize) {
+        UUID id = UUID.randomUUID();
+        OffsetDateTime now = OffsetDateTime.now();
+
+        Document document = new Document(id, fileName, contentType, fileSize, DocumentStatus.UPLOADED, now, now);
+
+        return documentRepository.save(document);
+    }
+}
