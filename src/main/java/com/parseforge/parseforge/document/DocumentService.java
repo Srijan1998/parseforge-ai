@@ -12,6 +12,8 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentStorage documentStorage;
 
+    public static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+
     public DocumentService(DocumentRepository documentRepository, DocumentStorage documentStorage) {
         this.documentRepository = documentRepository;
         this.documentStorage = documentStorage;
@@ -27,22 +29,41 @@ public class DocumentService {
     }
 
     public Document uploadDocument(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new InvalidDocumentException("File cannot be empty");
+        }
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new InvalidDocumentException("File cannot exceed 10mb");
+        }
+
+        String contentType = file.getContentType();
+
+        if (contentType == null || !contentType.equals("application/pdf")) {
+            throw new InvalidDocumentException("File can only be pdf");
+        }
+
+        String originalFileName = file.getOriginalFilename();
+
+        if (originalFileName == null || originalFileName.isBlank()) {
+            throw new InvalidDocumentException("File name cannot be empty");
+        }
+
         UUID documentId = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
 
-        String objectKey = "documents/" + documentId + "/" + file.getOriginalFilename();
+        String objectKey = "documents/" + documentId + "/" + originalFileName;
 
         try {
             documentStorage.store(
                     objectKey,
                     file.getInputStream(),
                     file.getSize(),
-                    file.getContentType()
+                    contentType
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to read uploaded document", e);
         }
-        Document document = new Document(documentId, file.getOriginalFilename(), file.getContentType(), file.getSize(), DocumentStatus.UPLOADED, now, now, objectKey);
+        Document document = new Document(documentId, originalFileName, contentType, file.getSize(), DocumentStatus.UPLOADED, now, now, objectKey);
 
         return documentRepository.save(document);
     }

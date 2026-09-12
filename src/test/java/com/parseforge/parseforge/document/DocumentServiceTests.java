@@ -12,6 +12,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -75,5 +76,61 @@ public class DocumentServiceTests {
         );
 
         verify(documentRepository).save(savedDocument);
+    }
+
+    @Test
+    void shouldFailEmptyFile() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "invoice.pdf",
+                "application/pdf",
+                new byte[0]
+        );
+
+        assertThatThrownBy(() -> documentService.uploadDocument(file))
+                .isInstanceOf(InvalidDocumentException.class)
+                .hasMessage("File cannot be empty");
+    }
+
+    @Test
+    void shouldFailOnEmptyFileName() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "",
+                "application/pdf",
+                "hello".getBytes()
+        );
+
+        assertThatThrownBy(() -> documentService.uploadDocument(file))
+                .isInstanceOf(InvalidDocumentException.class)
+                .hasMessage("File name cannot be empty");
+    }
+
+    @Test
+    void shouldFailOnInvalidContentType() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "invoice.json",
+                "application/json",
+                "hello".getBytes()
+        );
+
+        assertThatThrownBy(() -> documentService.uploadDocument(file))
+                .isInstanceOf(InvalidDocumentException.class)
+                .hasMessage("File can only be pdf");
+    }
+
+    @Test
+    void shouldFailOnFileSizeGreaterThanMax() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "invoice.json",
+                "application/json",
+                new byte[10 * 10 * 24 + 1]
+        );
+
+        assertThatThrownBy(() -> documentService.uploadDocument(file))
+                .isInstanceOf(InvalidDocumentException.class)
+                .hasMessage("File can only be pdf");
     }
 }
