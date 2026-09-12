@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/documents")
 public class DocumentController {
 
-    private DocumentService documentService;
+    private final DocumentService documentService;
 
     public DocumentController(DocumentService documentService) {
         this.documentService = documentService;
