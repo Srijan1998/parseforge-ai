@@ -1,8 +1,11 @@
 package com.parseforge.parseforge.document;
 
+import org.springframework.stereotype.Service;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Service
 public class DocumentService {
     private DocumentRepository documentRepository;
 
