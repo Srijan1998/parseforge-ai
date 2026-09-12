@@ -1,4 +1,4 @@
-package com.parseforge.parseforge.document;
+package com.parseforge.parseforge.storage;
 
 import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,18 +8,16 @@ import io.minio.MinioClient;
 import java.io.InputStream;
 
 @Component
-public class MinIODocumentStorage implements DocumentStorage{
+public class MinIODocumentStorage implements DocumentStorage {
 
     private final MinioClient minioClient;
     private final String bucket;
 
     public MinIODocumentStorage(
-            @Value("${minio.endpoint}") String endpoint,
-            @Value("${minio.access-key}") String accessKey,
-            @Value("${minio.secret-key}") String secretKey,
+            MinioClient minioClient,
             @Value("${minio.bucket}") String bucket
     ) {
-        this.minioClient = MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
+        this.minioClient = minioClient;
 
         this.bucket = bucket;
     }

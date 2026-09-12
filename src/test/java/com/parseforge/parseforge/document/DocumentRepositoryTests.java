@@ -20,7 +20,7 @@ public class DocumentRepositoryTests {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
 
-        Document document = new Document(id, "invoice.pdf", "application/pdf", 1024L, DocumentStatus.UPLOADED, now, now);
+        Document document = new Document(id, "invoice.pdf", "application/pdf", 1024L, DocumentStatus.UPLOADED, now, now, "");
 
         documentRepository.save(document);
 

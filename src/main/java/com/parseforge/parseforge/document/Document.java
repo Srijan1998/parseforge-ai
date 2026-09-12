@@ -32,7 +32,9 @@ public class Document {
 
     private OffsetDateTime updatedAt;
 
-    public Document(UUID id, String fileName, String contentType, Long fileSize, DocumentStatus status, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    private String objectKey;
+
+    public Document(UUID id, String fileName, String contentType, Long fileSize, DocumentStatus status, OffsetDateTime createdAt, OffsetDateTime updatedAt, String objectKey) {
         this.id = id;
         this.fileName = fileName;
         this.contentType = contentType;
@@ -40,5 +42,6 @@ public class Document {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.objectKey = objectKey;
     }
 }

@@ -1,4 +1,4 @@
-package com.parseforge.parseforge.document;
+package com.parseforge.parseforge.storage;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -14,12 +14,10 @@ public class MinioBucketInitializer {
     private final String bucket;
 
     public MinioBucketInitializer(
-            @Value("${minio.endpoint}") String endpoint,
-            @Value("${minio.access-key}") String accessKey,
-            @Value("${minio.secret-key}") String secretKey,
+            MinioClient minioClient,
             @Value("${minio.bucket}") String bucket
     ) {
-        this.minioClient = MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
+        this.minioClient = minioClient;
 
         this.bucket = bucket;
     }

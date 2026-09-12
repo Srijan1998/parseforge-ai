@@ -1,4 +1,4 @@
-package com.parseforge.parseforge.document;
+package com.parseforge.parseforge.storage;
 
 import java.io.InputStream;
 

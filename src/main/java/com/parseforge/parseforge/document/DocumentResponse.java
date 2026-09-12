@@ -10,7 +10,8 @@ public record DocumentResponse(
         long fileSize,
         DocumentStatus status,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        String objectKey
 ) {
     public static DocumentResponse from(Document document) {
         return new DocumentResponse(
@@ -20,7 +21,8 @@ public record DocumentResponse(
                 document.getFileSize(),
                 document.getStatus(),
                 document.getCreatedAt(),
-                document.getUpdatedAt()
+                document.getUpdatedAt(),
+                document.getObjectKey()
         );
     }
 }

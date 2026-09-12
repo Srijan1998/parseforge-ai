@@ -1,0 +1,2 @@
+ALTER TABLE documents
+ADD COLUMN object_key VARCHAR(500);
