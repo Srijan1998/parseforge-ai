@@ -34,7 +34,9 @@ public class Document {
 
     private String objectKey;
 
-    public Document(UUID id, String fileName, String contentType, Long fileSize, DocumentStatus status, OffsetDateTime createdAt, OffsetDateTime updatedAt, String objectKey) {
+    private String contentHash;
+
+    public Document(UUID id, String fileName, String contentType, Long fileSize, DocumentStatus status, OffsetDateTime createdAt, OffsetDateTime updatedAt, String objectKey, String contentHash) {
         this.id = id;
         this.fileName = fileName;
         this.contentType = contentType;
@@ -43,5 +45,6 @@ public class Document {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.objectKey = objectKey;
+        this.contentHash = contentHash;
     }
 }

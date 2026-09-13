@@ -30,6 +30,9 @@ public class DocumentServiceTests {
     @Mock
     private DocumentStorage documentStorage;
 
+    @Mock
+    private DocumentHasher documentHasher;
+
     @Test
     void shouldCreateAndSaveDocument() {
         Document document = documentService.createDocument("invoice.pdf", "application/pdf", 1024L);
@@ -58,6 +61,8 @@ public class DocumentServiceTests {
 
         when(documentRepository.save(any(Document.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        when(documentHasher.sha256(any(byte[].class))).thenReturn("a".repeat(64));
+
         Document savedDocument = documentService.uploadDocument(file);
 
         assertThat(savedDocument.getId()).isNotNull();
@@ -67,6 +72,8 @@ public class DocumentServiceTests {
         assertThat(savedDocument.getStatus()).isEqualTo(DocumentStatus.UPLOADED);
         assertThat(savedDocument.getCreatedAt()).isNotNull();
         assertThat(savedDocument.getUpdatedAt()).isNotNull();
+        assertThat(savedDocument.getContentHash()).isNotNull();
+        assertThat(savedDocument.getContentHash()).hasSize(64);
 
         verify(documentStorage).store(
                 eq(savedDocument.getObjectKey()),

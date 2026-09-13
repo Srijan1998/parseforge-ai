@@ -4,6 +4,8 @@ import com.parseforge.parseforge.storage.DocumentStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -11,19 +13,21 @@ import java.util.UUID;
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentStorage documentStorage;
+    private final DocumentHasher documentHasher;
 
     public static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    public DocumentService(DocumentRepository documentRepository, DocumentStorage documentStorage) {
+    public DocumentService(DocumentRepository documentRepository, DocumentStorage documentStorage, DocumentHasher documentHasher) {
         this.documentRepository = documentRepository;
         this.documentStorage = documentStorage;
+        this.documentHasher = documentHasher;
     }
 
     public Document createDocument(String fileName, String contentType, Long fileSize) {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
 
-        Document document = new Document(id, fileName, contentType, fileSize, DocumentStatus.UPLOADED, now, now, "");
+        Document document = new Document(id, fileName, contentType, fileSize, DocumentStatus.UPLOADED, now, now, "", "");
 
         return documentRepository.save(document);
     }
@@ -53,17 +57,27 @@ public class DocumentService {
 
         String objectKey = "documents/" + documentId + "/" + originalFileName;
 
+        byte[] content;
+
+        try {
+            content = file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read uploaded document", e);
+        }
+
+        String contentHash = documentHasher.sha256(content);
+
         try {
             documentStorage.store(
                     objectKey,
-                    file.getInputStream(),
+                    new ByteArrayInputStream(content),
                     file.getSize(),
                     contentType
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to read uploaded document", e);
         }
-        Document document = new Document(documentId, originalFileName, contentType, file.getSize(), DocumentStatus.UPLOADED, now, now, objectKey);
+        Document document = new Document(documentId, originalFileName, contentType, file.getSize(), DocumentStatus.UPLOADED, now, now, objectKey, contentHash);
 
         return documentRepository.save(document);
     }
