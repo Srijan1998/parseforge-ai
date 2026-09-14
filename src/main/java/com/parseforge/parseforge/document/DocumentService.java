@@ -1,5 +1,6 @@
 package com.parseforge.parseforge.document;
 
+import com.parseforge.parseforge.deduplication.DocumentDeduplicationCache;
 import com.parseforge.parseforge.storage.DocumentStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -14,13 +16,18 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentStorage documentStorage;
     private final DocumentHasher documentHasher;
+    private final DocumentDeduplicationCache documentDeduplicationCache;
 
     public static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    public DocumentService(DocumentRepository documentRepository, DocumentStorage documentStorage, DocumentHasher documentHasher) {
+    public DocumentService(DocumentRepository documentRepository,
+                           DocumentStorage documentStorage,
+                           DocumentHasher documentHasher,
+                           DocumentDeduplicationCache documentDeduplicationCache) {
         this.documentRepository = documentRepository;
         this.documentStorage = documentStorage;
         this.documentHasher = documentHasher;
+        this.documentDeduplicationCache = documentDeduplicationCache;
     }
 
     public Document createDocument(String fileName, String contentType, Long fileSize) {
@@ -66,6 +73,25 @@ public class DocumentService {
         }
 
         String contentHash = documentHasher.sha256(content);
+
+        Optional<UUID> cachedDocumentId = documentDeduplicationCache.findDocumentWithHash(contentHash);
+
+        if (cachedDocumentId.isPresent()) {
+            Optional<Document> cachedDocument = documentRepository.findById(cachedDocumentId.get());
+
+            if (cachedDocument.isPresent()) {
+                return cachedDocument.get();
+            }
+        }
+
+        Optional<Document> existingDocument = documentRepository.findByContentHash(contentHash);
+
+        if (existingDocument.isPresent()) {
+            Document document = existingDocument.get();
+            documentDeduplicationCache.store(contentHash, document.getId());
+
+            return document;
+        }
 
         try {
             documentStorage.store(
