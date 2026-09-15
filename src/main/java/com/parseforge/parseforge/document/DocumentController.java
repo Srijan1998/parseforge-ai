@@ -11,9 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final DocumentUploadService documentUploadService;
 
-    public DocumentController(DocumentService documentService) {
+    public DocumentController(DocumentService documentService,
+                              DocumentUploadService documentUploadService) {
         this.documentService = documentService;
+        this.documentUploadService = documentUploadService;
     }
 
     @PostMapping
@@ -35,7 +38,7 @@ public class DocumentController {
             @RequestParam("file")MultipartFile file
     ) {
         return DocumentResponse.from(
-                documentService.uploadDocument(file)
+                documentUploadService.upload(file)
         );
     }
 }

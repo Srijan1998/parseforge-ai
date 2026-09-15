@@ -39,7 +39,7 @@ public class DocumentService {
         return documentRepository.save(document);
     }
 
-    public Document uploadDocument(MultipartFile file) {
+    public DocumentUploadResult uploadDocument(MultipartFile file) {
         if (file.isEmpty()) {
             throw new InvalidDocumentException("File cannot be empty");
         }
@@ -80,7 +80,10 @@ public class DocumentService {
             Optional<Document> cachedDocument = documentRepository.findById(cachedDocumentId.get());
 
             if (cachedDocument.isPresent()) {
-                return cachedDocument.get();
+                return new DocumentUploadResult(
+                        cachedDocument.get(),
+                        false
+                );
             }
         }
 
@@ -90,7 +93,7 @@ public class DocumentService {
             Document document = existingDocument.get();
             documentDeduplicationCache.store(contentHash, document.getId());
 
-            return document;
+            return new DocumentUploadResult(document, false);
         }
 
         try {
@@ -105,6 +108,9 @@ public class DocumentService {
         }
         Document document = new Document(documentId, originalFileName, contentType, file.getSize(), DocumentStatus.UPLOADED, now, now, objectKey, contentHash);
 
-        return documentRepository.save(document);
+        return new DocumentUploadResult(
+                documentRepository.save(document),
+                true
+        );
     }
 }

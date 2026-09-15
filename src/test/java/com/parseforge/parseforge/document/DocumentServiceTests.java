@@ -67,7 +67,7 @@ public class DocumentServiceTests {
 
         stubForUpload();
 
-        Document savedDocument = documentService.uploadDocument(file);
+        Document savedDocument = documentService.uploadDocument(file).document();
 
         assertSavedDocument(savedDocument, content);
 
@@ -94,7 +94,7 @@ public class DocumentServiceTests {
 
         stubForUpload();
 
-        Document savedDocument = documentService.uploadDocument(file);
+        Document savedDocument = documentService.uploadDocument(file).document();
 
         assertSavedDocument(savedDocument, content);
 
@@ -102,7 +102,7 @@ public class DocumentServiceTests {
 
         when(documentRepository.findById(savedDocument.getId())).thenReturn(Optional.of(savedDocument));
 
-        savedDocument = documentService.uploadDocument(file);
+        savedDocument = documentService.uploadDocument(file).document();
 
         assertSavedDocument(savedDocument, content);
 
@@ -143,7 +143,7 @@ public class DocumentServiceTests {
 
         when(documentRepository.findByContentHash(anyString())).thenReturn(Optional.of(savedDocument));
 
-        savedDocument = documentService.uploadDocument(file);
+        savedDocument = documentService.uploadDocument(file).document();
 
         assertSavedDocument(savedDocument, content);
 
@@ -170,7 +170,7 @@ public class DocumentServiceTests {
 
         stubForUpload();
 
-        Document savedDocument = documentService.uploadDocument(file);
+        Document savedDocument = documentService.uploadDocument(file).document();
 
         assertSavedDocument(savedDocument, content);
 
@@ -185,7 +185,7 @@ public class DocumentServiceTests {
                 content
         );
 
-        savedDocument = documentService.uploadDocument(file2);
+        savedDocument = documentService.uploadDocument(file2).document();
 
         assertSavedDocument(savedDocument, content);
 

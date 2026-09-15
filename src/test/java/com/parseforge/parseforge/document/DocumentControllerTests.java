@@ -24,6 +24,9 @@ public class DocumentControllerTests {
     @MockitoBean
     private DocumentService documentService;
 
+    @MockitoBean
+    private DocumentUploadService documentUploadService;
+
     @Test
     void shouldCreateDocument() throws Exception {
         UUID id = UUID.randomUUID();
