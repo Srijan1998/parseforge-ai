@@ -25,4 +25,15 @@ public class RedisDocumentProcessingQueue
         redisTemplate.opsForList()
                 .rightPush(QUEUE_KEY, jobId.toString());
     }
+
+    @Override
+    public UUID dequeue() {
+        String jobId = redisTemplate.opsForList().leftPop(QUEUE_KEY);
+
+        if (jobId == null) {
+            return null;
+        }
+
+        return UUID.fromString(jobId);
+    }
 }

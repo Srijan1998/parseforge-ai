@@ -5,4 +5,6 @@ import java.util.UUID;
 public interface DocumentProcessingQueue {
 
     void enqueue(UUID jobId);
+
+    UUID dequeue();
 }
