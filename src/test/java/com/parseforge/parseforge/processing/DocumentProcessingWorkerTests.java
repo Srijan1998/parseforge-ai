@@ -1,5 +1,7 @@
 package com.parseforge.parseforge.processing;
 
+import com.parseforge.parseforge.document.Document;
+import com.parseforge.parseforge.extractor.DocumentExtractionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +26,9 @@ class DocumentProcessingWorkerTests {
     @InjectMocks
     private DocumentProcessingWorker worker;
 
+    @Mock
+    private DocumentExtractionService extractionService;
+
     @Test
     void shouldMoveDequeuedJobToProcessing() {
         UUID jobId = UUID.randomUUID();
@@ -35,18 +40,20 @@ class DocumentProcessingWorkerTests {
         when(processingQueue.dequeue())
                 .thenReturn(jobId);
 
-        when(jobRepository.findById(jobId))
+        when(jobRepository.findByIdWithDocument(jobId))
                 .thenReturn(Optional.of(job));
 
         worker.processNextJob();
 
-        assertThat(job.getStatus())
-                .isEqualTo(ProcessingJobStatus.PROCESSING);
-
         assertThat(job.getUpdatedAt())
                 .isNotNull();
 
-        verify(jobRepository).save(job);
+        verify(extractionService).extract(job.getDocument());
+
+        assertThat(job.getStatus())
+                .isEqualTo(ProcessingJobStatus.COMPLETED);
+
+        verify(jobRepository, times(2)).save(job);
     }
 
     @Test
@@ -57,5 +64,36 @@ class DocumentProcessingWorkerTests {
         worker.processNextJob();
 
         verifyNoInteractions(jobRepository);
+    }
+
+    @Test
+    void shouldMarkJobAsFailedWhenExtractionFails() {
+        UUID jobId = UUID.randomUUID();
+
+        Document document = new Document();
+        document.setId(UUID.randomUUID());
+
+        DocumentProcessingJob job = new DocumentProcessingJob();
+        job.setId(jobId);
+        job.setDocument(document);
+        job.setStatus(ProcessingJobStatus.PENDING);
+
+        when(processingQueue.dequeue())
+                .thenReturn(jobId);
+
+        when(jobRepository.findByIdWithDocument(jobId))
+                .thenReturn(Optional.of(job));
+
+        doThrow(new IllegalStateException("Extraction failed"))
+                .when(extractionService)
+                .extract(document);
+
+        worker.processNextJob();
+
+        assertThat(job.getStatus())
+                .isEqualTo(ProcessingJobStatus.FAILED);
+
+        verify(extractionService).extract(document);
+        verify(jobRepository, times(2)).save(job);
     }
 }

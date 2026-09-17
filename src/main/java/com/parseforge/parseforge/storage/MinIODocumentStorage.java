@@ -1,5 +1,6 @@
 package com.parseforge.parseforge.storage;
 
+import io.minio.GetObjectArgs;
 import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,23 @@ public class MinIODocumentStorage implements DocumentStorage {
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to store document in MinIO", e);
+        }
+    }
+
+    @Override
+    public InputStream retrieve(String objectKey) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectKey)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to retrieve document from object storage: " + objectKey,
+                    e
+            );
         }
     }
 }

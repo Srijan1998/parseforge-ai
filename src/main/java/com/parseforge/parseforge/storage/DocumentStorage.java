@@ -10,4 +10,6 @@ public interface DocumentStorage {
             long size,
             String contentType
     );
+
+    InputStream retrieve(String objectKey);
 }
