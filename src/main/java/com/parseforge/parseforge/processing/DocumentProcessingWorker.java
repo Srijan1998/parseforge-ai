@@ -40,16 +40,27 @@ public class DocumentProcessingWorker {
                 );
 
         try {
+            OffsetDateTime startedAt = OffsetDateTime.now();
+
             job.setStatus(ProcessingJobStatus.PROCESSING);
-            job.setUpdatedAt(OffsetDateTime.now());
+            job.setAttemptCount(job.getAttemptCount() + 1);
+            job.setStartedAt(startedAt);
+            job.setUpdatedAt(startedAt);
+
+            job.setErrorCode(null);
+            job.setErrorMessage(null);
+
             jobRepository.save(job);
 
             extractionService.extract(job.getDocument());
 
-            job.setStatus(ProcessingJobStatus.COMPLETED);
-            job.setUpdatedAt(OffsetDateTime.now());
-            jobRepository.save(job);
+            OffsetDateTime completedAt = OffsetDateTime.now();
 
+            job.setStatus(ProcessingJobStatus.COMPLETED);
+            job.setCompletedAt(completedAt);
+            job.setUpdatedAt(completedAt);
+
+            jobRepository.save(job);
         } catch (Exception e) {
             log.error(
                     "Document processing failed for jobId={}, documentId={}",
@@ -57,8 +68,12 @@ public class DocumentProcessingWorker {
                     job.getDocument().getId(),
                     e
             );
+
             job.setStatus(ProcessingJobStatus.FAILED);
+            job.setErrorCode("PROCESSING_FAILED");
+            job.setErrorMessage(e.getMessage());
             job.setUpdatedAt(OffsetDateTime.now());
+
             jobRepository.save(job);
         }
     }

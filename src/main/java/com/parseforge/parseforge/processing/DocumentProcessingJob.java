@@ -29,4 +29,19 @@ public class DocumentProcessingJob {
     private OffsetDateTime createdAt;
 
     private OffsetDateTime updatedAt;
+
+    @Column(name = "attempt_count", nullable = false)
+    private Integer attemptCount;
+
+    @Column(name = "started_at")
+    private OffsetDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
+
+    @Column(name = "error_code")
+    private String errorCode;
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 }

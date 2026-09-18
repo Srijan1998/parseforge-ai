@@ -29,6 +29,7 @@ public class DocumentProcessingService {
         job.setStatus(ProcessingJobStatus.PENDING);
         job.setCreatedAt(now);
         job.setUpdatedAt(now);
+        job.setAttemptCount(0);
 
         DocumentProcessingJob savedJob = jobRepository.save(job);
 

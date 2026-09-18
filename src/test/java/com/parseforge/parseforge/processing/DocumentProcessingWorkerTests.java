@@ -35,6 +35,7 @@ class DocumentProcessingWorkerTests {
 
         DocumentProcessingJob job = new DocumentProcessingJob();
         job.setId(jobId);
+        job.setAttemptCount(0);
         job.setStatus(ProcessingJobStatus.PENDING);
 
         when(processingQueue.dequeue())
@@ -52,6 +53,12 @@ class DocumentProcessingWorkerTests {
 
         assertThat(job.getStatus())
                 .isEqualTo(ProcessingJobStatus.COMPLETED);
+
+        assertThat(job.getAttemptCount()).isEqualTo(1);
+        assertThat(job.getStartedAt()).isNotNull();
+        assertThat(job.getCompletedAt()).isNotNull();
+        assertThat(job.getErrorCode()).isNull();
+        assertThat(job.getErrorMessage()).isNull();
 
         verify(jobRepository, times(2)).save(job);
     }
@@ -75,6 +82,7 @@ class DocumentProcessingWorkerTests {
 
         DocumentProcessingJob job = new DocumentProcessingJob();
         job.setId(jobId);
+        job.setAttemptCount(0);
         job.setDocument(document);
         job.setStatus(ProcessingJobStatus.PENDING);
 
@@ -92,6 +100,16 @@ class DocumentProcessingWorkerTests {
 
         assertThat(job.getStatus())
                 .isEqualTo(ProcessingJobStatus.FAILED);
+
+        assertThat(job.getAttemptCount()).isEqualTo(1);
+        assertThat(job.getStartedAt()).isNotNull();
+        assertThat(job.getCompletedAt()).isNull();
+
+        assertThat(job.getErrorCode())
+                .isEqualTo("PROCESSING_FAILED");
+
+        assertThat(job.getErrorMessage())
+                .isEqualTo("Extraction failed");
 
         verify(extractionService).extract(document);
         verify(jobRepository, times(2)).save(job);
