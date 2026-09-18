@@ -1,5 +1,6 @@
 package com.parseforge.parseforge.storage;
 
+import com.parseforge.parseforge.processing.DocumentStorageException;
 import io.minio.GetObjectArgs;
 import io.minio.PutObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,7 @@ public class MinIODocumentStorage implements DocumentStorage {
                             .build()
             );
         } catch (Exception e) {
-            throw new IllegalStateException(
+            throw new DocumentStorageException(
                     "Failed to retrieve document from object storage: " + objectKey,
                     e
             );

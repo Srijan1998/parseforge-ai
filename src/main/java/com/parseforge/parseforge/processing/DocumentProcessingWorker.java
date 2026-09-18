@@ -2,6 +2,7 @@ package com.parseforge.parseforge.processing;
 
 import com.parseforge.parseforge.extractor.DocumentExtractionService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -14,15 +15,18 @@ public class DocumentProcessingWorker {
     private final DocumentProcessingQueue processingQueue;
     private final DocumentProcessingJobRepository jobRepository;
     private final DocumentExtractionService extractionService;
+    private final int maxAttempts;
 
     public DocumentProcessingWorker(
             DocumentProcessingQueue processingQueue,
             DocumentProcessingJobRepository jobRepository,
-            DocumentExtractionService extractionService
+            DocumentExtractionService extractionService,
+            @Value("${processing.worker.max-attempts:3}") int maxAttempts
     ) {
         this.processingQueue = processingQueue;
         this.jobRepository = jobRepository;
         this.extractionService = extractionService;
+        this.maxAttempts = maxAttempts;
     }
 
     public void processNextJob() {
@@ -61,6 +65,8 @@ public class DocumentProcessingWorker {
             job.setUpdatedAt(completedAt);
 
             jobRepository.save(job);
+        } catch (DocumentProcessingException e) {
+            handleProcessingFailure(job, e);
         } catch (Exception e) {
             log.error(
                     "Document processing failed for jobId={}, documentId={}",
@@ -76,5 +82,41 @@ public class DocumentProcessingWorker {
 
             jobRepository.save(job);
         }
+    }
+
+    private void handleProcessingFailure(
+            DocumentProcessingJob job,
+            DocumentProcessingException e
+    ) {
+        job.setErrorCode(e.getErrorCode());
+        job.setErrorMessage(e.getMessage());
+        job.setUpdatedAt(OffsetDateTime.now());
+
+        if (e.isRetryable() && job.getAttemptCount() < maxAttempts) {
+            job.setStatus(ProcessingJobStatus.PENDING);
+            jobRepository.save(job);
+
+            processingQueue.enqueue(job.getId());
+
+            log.warn(
+                    "Document processing will be retried for jobId={}, attempt={}/{}",
+                    job.getId(),
+                    job.getAttemptCount(),
+                    maxAttempts
+            );
+
+            return;
+        }
+
+        job.setStatus(ProcessingJobStatus.FAILED);
+        jobRepository.save(job);
+
+        log.error(
+                "Document processing permanently failed for jobId={}, errorCode={}, attempts={}",
+                job.getId(),
+                e.getErrorCode(),
+                job.getAttemptCount(),
+                e
+        );
     }
 }

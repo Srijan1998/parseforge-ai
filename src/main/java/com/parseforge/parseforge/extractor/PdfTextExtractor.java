@@ -1,5 +1,6 @@
 package com.parseforge.parseforge.extractor;
 
+import com.parseforge.parseforge.processing.PdfExtractionException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -20,7 +21,7 @@ public class PdfTextExtractor implements DocumentTextExtractor {
             PDFTextStripper stripper = new PDFTextStripper();
             return stripper.getText(document);
         } catch (IOException e) {
-            throw new IllegalStateException(
+            throw new PdfExtractionException(
                     "Failed to extract text from PDF",
                     e
             );
