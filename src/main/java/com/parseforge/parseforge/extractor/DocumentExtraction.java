@@ -28,4 +28,8 @@ public class DocumentExtraction {
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "extraction_method", nullable = false)
+    private ExtractionMethod extractionMethod;
 }

@@ -24,7 +24,7 @@ class DocumentExtractionServiceTests {
     private DocumentStorage documentStorage;
 
     @Mock
-    private DocumentTextExtractor textExtractor;
+    private DocumentExtractionStrategy extractionStrategy;
 
     @Mock
     private DocumentExtractionRepository extractionRepository;
@@ -44,8 +44,8 @@ class DocumentExtractionServiceTests {
         when(documentStorage.retrieve(document.getObjectKey()))
                 .thenReturn(stream);
 
-        when(textExtractor.extract(stream))
-                .thenReturn("Invoice number 12345");
+        when(extractionStrategy.extract("pdf".getBytes()))
+                .thenReturn(new TextExtractionResult("Invoice number 12345", ExtractionMethod.EMBEDDED_TEXT));
 
         when(extractionRepository.save(any(DocumentExtraction.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -62,8 +62,8 @@ class DocumentExtractionServiceTests {
         verify(documentStorage)
                 .retrieve(document.getObjectKey());
 
-        verify(textExtractor)
-                .extract(stream);
+        verify(extractionStrategy)
+                .extract("pdf".getBytes());
 
         verify(extractionRepository)
                 .save(any(DocumentExtraction.class));

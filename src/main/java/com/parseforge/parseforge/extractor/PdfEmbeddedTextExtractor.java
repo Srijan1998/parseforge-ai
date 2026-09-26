@@ -10,16 +10,21 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Component
-public class PdfTextExtractor implements DocumentTextExtractor {
+public class PdfEmbeddedTextExtractor implements DocumentTextExtractor {
 
     @Override
-    public String extract(InputStream inputStream) {
+    public TextExtractionResult extract(InputStream inputStream) {
         try (
                 PDDocument document =
                         Loader.loadPDF(inputStream.readAllBytes())
         ) {
             PDFTextStripper stripper = new PDFTextStripper();
-            return stripper.getText(document);
+            String text = stripper.getText(document);
+
+            return new TextExtractionResult(
+                    text,
+                    ExtractionMethod.EMBEDDED_TEXT
+            );
         } catch (IOException e) {
             throw new PdfExtractionException(
                     "Failed to extract text from PDF",

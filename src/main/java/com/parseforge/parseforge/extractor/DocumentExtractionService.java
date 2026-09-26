@@ -13,27 +13,29 @@ import java.util.UUID;
 public class DocumentExtractionService {
 
     private final DocumentStorage documentStorage;
-    private final DocumentTextExtractor textExtractor;
+    private final DocumentExtractionStrategy extractionStrategy;
     private final DocumentExtractionRepository extractionRepository;
 
     public DocumentExtractionService(
             DocumentStorage documentStorage,
-            DocumentTextExtractor textExtractor,
+            DocumentExtractionStrategy extractionStrategy,
             DocumentExtractionRepository extractionRepository
     ) {
         this.documentStorage = documentStorage;
-        this.textExtractor = textExtractor;
+        this.extractionStrategy = extractionStrategy;
         this.extractionRepository = extractionRepository;
     }
 
     public DocumentExtraction extract(Document document) {
 
-        String extractedText;
+        TextExtractionResult result;
 
         try (InputStream inputStream =
                      documentStorage.retrieve(document.getObjectKey())) {
 
-            extractedText = textExtractor.extract(inputStream);
+            byte[] content = inputStream.readAllBytes();
+
+            result = extractionStrategy.extract(content);
 
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -45,7 +47,8 @@ public class DocumentExtractionService {
         DocumentExtraction extraction = new DocumentExtraction();
         extraction.setId(UUID.randomUUID());
         extraction.setDocument(document);
-        extraction.setExtractedText(extractedText);
+        extraction.setExtractedText(result.text());
+        extraction.setExtractionMethod(result.method());
         extraction.setCreatedAt(OffsetDateTime.now());
 
         return extractionRepository.save(extraction);

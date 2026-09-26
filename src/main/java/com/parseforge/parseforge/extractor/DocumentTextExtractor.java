@@ -4,5 +4,5 @@ import java.io.InputStream;
 
 public interface DocumentTextExtractor {
 
-    String extract(InputStream inputStream);
+    TextExtractionResult extract(InputStream inputStream);
 }

@@ -12,10 +12,10 @@ import java.io.ByteArrayOutputStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class PDFTextExtractorTests {
+class PDFEmbeddedTextExtractorTests {
 
-    private final PdfTextExtractor extractor =
-            new PdfTextExtractor();
+    private final PdfEmbeddedTextExtractor extractor =
+            new PdfEmbeddedTextExtractor();
 
     @Test
     void shouldExtractTextFromPdf() throws Exception {
@@ -48,11 +48,15 @@ class PDFTextExtractorTests {
             pdf = output.toByteArray();
         }
 
-        String text = extractor.extract(
-                new ByteArrayInputStream(pdf)
-        );
+        TextExtractionResult result =
+                extractor.extract(
+                        new ByteArrayInputStream(pdf)
+                );
 
-        assertThat(text)
+        assertThat(result.text())
                 .contains("ParseForge invoice 12345");
+
+        assertThat(result.method())
+                .isEqualTo(ExtractionMethod.EMBEDDED_TEXT);
     }
 }
